@@ -1,17 +1,15 @@
 import numpy as np
 import cv2
 import os
-from scipy.fftpack import fft2, ifft2, fftshift
+from scipy.fftpack import fft2, fftshift
 
 
-# Функція для обчислення частотного зображення
 def dft_image(image):
     f_transform = fft2(image)
     f_transform_shift = fftshift(f_transform)
     return f_transform_shift
 
 
-# Ідеальний НЧ фільтр
 def ideal_low_pass_filter(shape, cutoff):
     P, Q = shape
     u = np.arange(P) - P / 2
@@ -22,7 +20,6 @@ def ideal_low_pass_filter(shape, cutoff):
     return H
 
 
-# Баттерворта НЧ фільтр
 def butterworth_low_pass_filter(shape, cutoff, order):
     P, Q = shape
     u = np.arange(P) - P / 2
@@ -33,7 +30,6 @@ def butterworth_low_pass_filter(shape, cutoff, order):
     return H
 
 
-# Гауса НЧ фільтр
 def gaussian_low_pass_filter(shape, cutoff):
     P, Q = shape
     u = np.arange(P) - P / 2
@@ -44,25 +40,21 @@ def gaussian_low_pass_filter(shape, cutoff):
     return H
 
 
-# Ідеальний ВЧ фільтр
 def ideal_high_pass_filter(shape, cutoff):
     H = 1 - ideal_low_pass_filter(shape, cutoff)
     return H
 
 
-# Баттерворта ВЧ фільтр
 def butterworth_high_pass_filter(shape, cutoff, order):
     H = 1 - butterworth_low_pass_filter(shape, cutoff, order)
     return H
 
 
-# Гауса ВЧ фільтр
 def gaussian_high_pass_filter(shape, cutoff):
     H = 1 - gaussian_low_pass_filter(shape, cutoff)
     return H
 
 
-# Лапласіан
 def laplacian_filter(shape):
     P, Q = shape
     u = np.arange(P) - P / 2
@@ -72,20 +64,17 @@ def laplacian_filter(shape):
     return H
 
 
-# Зворотне перетворення Фур'є з більш агресивною нормалізацією
 def inverse_dft(f_transform_shift):
     f_ishift = np.fft.ifftshift(f_transform_shift)
     img_back = np.fft.ifft2(f_ishift)
     img_back = np.abs(img_back)
 
-    # Більш агресивна нормалізація до діапазону 0-255
     img_back = (img_back - np.min(img_back)) / (np.max(img_back) - np.min(img_back)) * 255
     img_back = np.clip(img_back, 0, 255).astype(np.uint8)
 
     return img_back
 
 
-# Основна функція фільтрації
 def apply_filter(image, filter_func, output_filename, cutoff=None, order=1):
     f_transform_shift = dft_image(image)
     if cutoff:
@@ -95,7 +84,6 @@ def apply_filter(image, filter_func, output_filename, cutoff=None, order=1):
     G = H * f_transform_shift
     filtered_image = inverse_dft(G)
 
-    # Зберегти результат
     if not os.path.exists('result_images'):
         os.makedirs('result_images')
 
@@ -105,7 +93,6 @@ def apply_filter(image, filter_func, output_filename, cutoff=None, order=1):
 
 
 if __name__ == "__main__":
-    # Читання зображення
     image = cv2.imread('pic1.jpg', 0)
 
     # Ідеальний НЧ фільтр
